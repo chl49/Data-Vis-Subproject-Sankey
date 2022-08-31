@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<link rel="stylesheet" type="text/css" href="main.css">
+<title>SANKEY</title>
+<style>
+    .node rect {
+        cursor: move;
+        fill-opacity: .9;
+        shape-rendering: crispEdges;
+    }
+    .node text {
+        pointer-events: none;
+        text-shadow: 0 1px 0 #fff;
+    }
+    .link {
+        fill: none;
+        stroke: #000;
+        stroke-opacity: .2;
+    }
+    .link:hover {
+        stroke-opacity: .5;
+    }
+    .axis path,
+    .axis line{
+        fill: none;
+        stroke: black;
+    }
+
+    #S-Tier{
+        fill: rgb(0, 255, 255);
+        stroke: rgb(0, 200, 255);
+        stroke-width: 5px;
+    }
+
+    #A-Tier{
+        fill: rgb(0, 255, 0);
+        stroke: rgb(0, 200, 0);
+        stroke-width: 5px;
+    }
+
+    #B-Tier{
+        fill: rgb(255, 255, 0);
+        stroke: rgb(250, 200, 0);
+        stroke-width: 5px;
+    }
+    #C-Tier{
+        fill: rgb(255, 0, 0);
+        stroke: rgb(200, 0, 0);
+        stroke-width: 5px;
+    }
+    #AE{
+        fill: rgb(0, 255, 255);
+        stroke: rgb(0, 200, 255);
+        stroke-width: 3px;
+    }
+    #AF{
+        fill: rgb(0, 255, 0);
+        stroke: rgb(0, 200, 255);
+        stroke-width: 3px;
+    }
+    #AG{
+        fill: rgb(255, 255, 0);
+        stroke: rgb(0, 200, 255);
+        stroke-width: 3px;
+    }
+    #AH{
+        fill: rgb(255, 0, 0);
+        stroke: rgb(0, 200, 255);
+        stroke-width: 3px;
+    }
+
+    #BE{
+        fill: rgb(0, 255, 255);
+        stroke: rgb(0, 200, 0);
+        stroke-width: 3px;
+    }
+    #BF{
+        fill: rgb(0, 255, 0);
+        stroke: rgb(0, 200, 0);
+        stroke-width: 3px;
+    }
+    #BG{
+        fill: rgb(255, 255, 0);
+        stroke: rgb(0, 200, 0);
+        stroke-width: 3px;
+    }
+    #BH{
+        fill: rgb(255, 0, 0);
+        stroke: rgb(0, 200, 0);
+        stroke-width: 3px;
+    }
+    #CE{
+        fill: rgb(0, 255, 255);
+        stroke: rgb(255, 200, 0);
+        stroke-width: 3px;
+    }
+    #CF{
+        fill: rgb(0, 255, 0);
+        stroke: rgb(255, 200, 0);
+        stroke-width: 3px;
+    }
+    #CG{
+        fill: rgb(255, 255, 0);
+        stroke: rgb(255, 200, 0);
+        stroke-width: 3px;
+    }
+    #CH{
+        fill: rgb(255, 0, 0);
+        stroke: rgb(255, 200, 0);
+        stroke-width: 3px;
+    }
+    #DE{
+        fill: rgb(0, 255, 255);
+        stroke: rgb(200, 0, 0);
+        stroke-width: 3px;
+    }
+    #DF{
+        fill: rgb(0, 255, 0);
+        stroke: rgb(200, 0, 0);
+        stroke-width: 3px;
+    }
+    #DG{
+        fill: rgb(255, 255, 0);
+        stroke: rgb(200, 0, 0);
+        stroke-width: 3px;
+    }
+    #DH{
+        fill: rgb(255, 0, 0);
+        stroke: rgb(200, 0, 0);
+        stroke-width: 3px;
+    }
+    .tick text{
+        font-size: 12px;
+    }
+    .tick line{
+        opacity: 0.2;
+    }
+</style>
+<body>
+<div class="content">
+    <h1>CMPT 469 Subproject: The Hill Climb </h1>
+    <span class="caption">By Herbert Li | chl49@sfu.ca</span>
+    <h2>Comparing Game Win-Loss Frequency Based on Tier List Ranked Character Matchups in Nickelodeon All-Star Brawl</h2>
+    <span class="caption">Player 1: Herb | Player 2: Opponents------------------------------------------------ONLINE RATING VS MATCH NO.-------------------------------------------------</span>
+</div>
+
+<div class="container" id="chartSankey">
+</div>
+<div class="container" id="chartLine">
+</div>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="https://rawgit.com/d3/d3-plugins/master/sankey/sankey.js"></script>
+
+<script>
+    // ## Datasets for Sankey visualization
+    var graph =
+        {
+            "nodes":[
+                {"node":0,"name":"S-Tier"},
+                {"node":1,"name":"A-Tier"},
+                {"node":2,"name":"B-Tier"},
+                {"node":3,"name":"C-Tier"},
+                {"node":4,"name":"S-Tier"},
+                {"node":5,"name":"A-Tier"},
+                {"node":6,"name":"B-Tier"},
+                {"node":7,"name":"C-Tier"}
+            ],
+            "links":[
+                {"source":0,"target":4,"value":9, "matchup": "AE"},
+                {"source":0,"target":5,"value":6, "matchup": "AF"},
+                {"source":0,"target":6,"value":3, "matchup": "AG"},
+                {"source":0,"target":7,"value":2, "matchup": "AH"},
+                {"source":1,"target":4,"value":9, "matchup": "BE"},
+                {"source":1,"target":5,"value":5, "matchup": "BF"},
+                {"source":1,"target":6,"value":5, "matchup": "BG"},
+                {"source":1,"target":7,"value":1, "matchup": "BH"},
+                {"source":2,"target":4,"value":9, "matchup": "CE"},
+                {"source":2,"target":5,"value":4, "matchup": "CF"},
+                {"source":2,"target":6,"value":4, "matchup": "CG"},
+                {"source":2,"target":7,"value":3, "matchup": "CH"},
+                {"source":3,"target":4,"value":8, "matchup": "DE"},
+                {"source":3,"target":5,"value":5, "matchup": "DF"},
+                {"source":3,"target":6,"value":5, "matchup": "DG"},
+                {"source":3,"target":7,"value":2, "matchup": "DH"}
+            ]};
+    // ## Datasets for linechart
+    var dataset = [
+        {x:  0, y: 500, m:""},
+        {x:  1, y: 514, m:"DF"}, //DF#1
+        {x:  2, y: 525, m:"CG"}, //CG#1
+        {x:  3, y: 535, m:"BH"}, //BH#1
+        {x:  4, y: 547, m:"AG"}, //AG#1
+        {x:  5, y: 555, m:"DH"}, //DH#1
+        {x:  6, y: 565, m:"CH"}, //CH#1
+        {x:  7, y: 575, m:"BG"}, //BG#1
+        {x:  8, y: 585, m:"AH"}, //AH#1
+        {x:  9, y: 596, m:"DG"}, //DG#1
+        {x: 10, y: 584, m:"CG"}, //CG#2
+        {x: 11, y: 593, m:"BE"}, //BE#1
+        {x: 12, y: 581, m:"AE"}, //AE#1
+        {x: 13, y: 573, m:"DG"}, //DG#2
+        {x: 14, y: 583, m:"CF"}, //CF#1
+        {x: 15, y: 571, m:"BF"}, //BF#1
+        {x: 16, y: 581, m:"AF"}, //AF#1
+        {x: 17, y: 591, m:"DF"}, //DF#2
+        {x: 18, y: 601, m:"CH"}, //CH#2
+        {x: 19, y: 610, m:"BG"}, //BG#2
+        {x: 20, y: 621, m:"AE"}, //AE#2
+        {x: 21, y: 631, m:"DH"}, //DH#2
+        {x: 22, y: 645, m:"CH"}, //CH#3
+        {x: 23, y: 655, m:"BG"}, //BG#3
+        {x: 24, y: 665, m:"AH"}, //AH#2
+        {x: 25, y: 675, m:"DG"}, //DG#3
+        {x: 26, y: 685, m:"CG"}, //CG#3
+        {x: 27, y: 695, m:"BE"}, //BE#2
+        {x: 28, y: 700, m:"AF"}, //AF#2
+        {x: 29, y: 710, m:"DF"}, //DF#3
+        {x: 30, y: 720, m:"CE"}, //CE#1
+        {x: 31, y: 730, m:"BE"}, //BE#3
+        {x: 32, y: 740, m:"AE"}, //AE#3
+        {x: 33, y: 730, m:"DF"}, //DF#4
+        {x: 34, y: 720, m:"CE"}, //CE#2
+        {x: 35, y: 730, m:"BF"}, //BF#2
+        {x: 36, y: 721, m:"AG"}, //AG#2
+        {x: 37, y: 711, m:"DE"}, //DE#1
+        {x: 38, y: 701, m:"CF"}, //CF#2
+        {x: 39, y: 690, m:"BF"}, //BF#3
+        {x: 40, y: 681, m:"AE"}, //AE#4
+        {x: 41, y: 691, m:"DE"}, //DE#2
+        {x: 42, y: 705, m:"CE"}, //CE#3
+        {x: 43, y: 715, m:"BE"}, //BE#4
+        {x: 44, y: 725, m:"AF"}, //AF#3
+        {x: 45, y: 714, m:"DE"}, //DE#3
+        {x: 46, y: 706, m:"CE"}, //CE#4
+        {x: 47, y: 716, m:"BG"}, //BG#4
+        {x: 48, y: 708, m:"AF"}, //AF#4
+        {x: 49, y: 699, m:"DG"}, //DG#4
+        {x: 50, y: 710, m:"CG"}, //CG#4
+        {x: 51, y: 721, m:"BF"}, //BF#4
+        {x: 52, y: 711, m:"AG"}, //AG#3
+        {x: 53, y: 702, m:"DE"}, //DE#4
+        {x: 54, y: 712, m:"CE"}, //CE#5
+        {x: 55, y: 723, m:"BE"}, //BE#5
+        {x: 56, y: 731, m:"AE"}, //AE#5
+        {x: 57, y: 721, m:"DF"}, //DF#5
+        {x: 58, y: 711, m:"CF"}, //CF#3
+        {x: 59, y: 700, m:"BE"}, //BE#6
+        {x: 60, y: 711, m:"AE"}, //AE#6
+        {x: 61, y: 701, m:"DE"}, //DE#5
+        {x: 62, y: 693, m:"CE"}, //CE#6
+        {x: 63, y: 705, m:"BG"}, //BG#5
+        {x: 64, y: 715, m:"AF"}, //AF#5
+        {x: 65, y: 705, m:"DE"}, //DE#6
+        {x: 66, y: 695, m:"CE"}, //CE#7
+        {x: 67, y: 705, m:"BF"}, //BF#5
+        {x: 68, y: 713, m:"AE"}, //AE#7
+        {x: 69, y: 700, m:"DE"}, //DE#7
+        {x: 70, y: 710, m:"CF"}, //CF#4
+        {x: 71, y: 720, m:"BE"}, //BE#7
+        {x: 72, y: 710, m:"AE"}, //AE#8
+        {x: 73, y: 720, m:"DG"}, //DG#5
+        {x: 74, y: 711, m:"CE"}, //CE#8
+        {x: 75, y: 720, m:"BE"}, //BE#8
+        {x: 76, y: 731, m:"AE"}, //AE#9
+        {x: 77, y: 721, m:"DE"}, //DE#8
+        {x: 78, y: 711, m:"CE"}, //CE#9
+        {x: 79, y: 700, m:"BE"}, //BE#9
+        {x: 80, y: 711, m:"AF"}  //AF#5
+
+    ];
+
+
+</script>
+
+<script>
+    // ## Original source for Sankey https://gist.github.com/d3noob/c2637e28b79fb3bfea13
+    // ## Option to move nodes eliminated
+    // ## Order of nodes disabled on sankey.js (//nodes.sort(ascendingDepth);) to maintain the order of data, which is alphabetical and prevent for the nodes to be ordered by size
+    // ## Codigo inicial adquirido para el Sankey https://gist.github.com/d3noob/c2637e28b79fb3bfea13
+    // ## La posibilidad de mover los nodos se ha eliminado
+    // ## La ordenacion en el archivo sankey.js se ha desbilitado (//nodes.sort(ascendingDepth);) para mantener el ordenen de los datos y evitar que los nodos se ordenen por tama~o
+    var units = "times";
+    var margin = {top: 10, right: 10, bottom: 40, left: 20},
+        width = 250 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+    var formatNumber = d3.format(",.0f"),    // zero decimal places
+        format = function(d) { return formatNumber(d) + " " + units; },
+        color = d3.scale.category20();
+    // append the svg canvas to the page
+    var svg = d3.select("#chartSankey").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id", "chart1")
+        .append("g")
+        .attr("transform",
+            "translate(" + margin.left + "," + margin.top + ")");
+    // Set the sankey diagram properties
+    var sankey = d3.sankey()
+        .nodeWidth(36)
+        .nodePadding(40)
+        .size([width, height]);
+    var path = sankey.link();
+    sankey
+        .nodes(graph.nodes)
+        .links(graph.links)
+        .layout(32);
+    // add in the links
+    var link = svg.append("g").selectAll(".link")
+        .data(graph.links)
+        .enter().append("path")
+        /*
+        .attr("class", function(d){
+            return "link " + d.source.name;
+        })
+         */
+        .attr("class", function(d){
+            return "link " + d.matchup;
+        })
+        .attr("d", path)
+            .attr("value", function(d) {
+                return d.name
+            })
+        .style("stroke-width", function(d) { return Math.max(1, d.dy); })
+        .sort(function(a, b) { return b.dy - a.dy; })
+
+        .on("mouseover", function(d){
+            //var s = d.source.name;
+            var s = d.matchup;
+            d3.selectAll(".circle").style('opacity', 0.1);
+            d3.selectAll("#" + s).style('opacity', 1);
+            //d3.selectAll(".circle").style('opacity', .1);
+            //d3.select("#" + s).style('opacity',  1);
+        })
+        .on("mouseout", function(d){
+            d3.selectAll(".circle").style('opacity', 1);
+        })
+        ;
+
+
+
+
+    // add the link titles
+    link.append("title")
+        .text(function(d) {
+            return "P1: "+d.source.name + " vs P2: " +
+                d.target.name + "\n" + format(d.value); });
+    // add in the nodes
+    var node = svg.append("g").selectAll(".node")
+        .data(graph.nodes)
+        .enter().append("g")
+        .attr("class", "node")
+        .attr("transform", function(d) {
+            return "translate(" + d.x + "," + d.y + ")"; })
+    // add the rectangles for the nodes
+    node.append("rect")
+        .attr("height", function(d) { return d.dy; })
+        .attr("width", sankey.nodeWidth())
+        //NEW
+        .attr("class", function(d){
+            return "node " + d.name;
+        })
+
+        .attr("id", function(d) {
+            return d.name
+        })
+
+        //.style("fill", function(d) {
+            //return d.color = color(d.name.replace(/ .*/, "")); })
+
+        //.style("stroke", function(d) {
+            //return d3.rgb(d.color).darker(2); })
+
+        .on("mouseover", function(d){
+            var s = d.name;
+            var m = d.source.matchup;
+            d3.selectAll(".circle").style('opacity', .1);
+            d3.selectAll("#" + s).style('opacity',  1);
+            d3.selectAll(".link").style('opacity', .1);
+            d3.selectAll("." + m).style('opacity',  1);
+        })
+        .on("mouseout", function(d){
+            d3.selectAll(".circle").style('opacity', 1);
+            d3.selectAll(".link").style('opacity', 1);
+        })
+
+        ;
+
+
+    node.append("title")
+        .text(function(d) {
+            return d.name + "\n" + format(d.value); });
+    // add in the title for the nodes
+    node.append("text")
+        .attr("x", -6)
+        .attr("y", function(d) { return d.dy / 2; })
+        .attr("dy", ".35em")
+        .attr("text-anchor", "end")
+        .attr("transform", null)
+        .text(function(d) { return d.name; })
+        .filter(function(d) { return d.x < width / 2; })
+        .attr("x", 6 + sankey.nodeWidth())
+        .attr("text-anchor", "start");
+
+</script>
+
+<script>
+    var margin = {top: 10, right: 10, bottom: 40, left: 40},
+        width = 1000 - margin.left - margin.right,
+        height = 500 - margin.top - margin.bottom;
+
+    var xScale = d3.scale.linear()
+        .domain([0, d3.max(dataset, function(d){ return d.x; })])
+        .range([0, width]);
+    var yScale = d3.scale.linear()
+        .domain([d3.min(dataset, function(d){ return d.y; }), d3.max(dataset, function(d){ return d.y; })])
+        .range([height, 0]);
+    var xAxis = d3.svg.axis()
+        .scale(xScale)
+        .ticks(10);
+    var yAxis = d3.svg.axis()
+        .scale(yScale)
+        .orient("left")
+        .tickSize(-width)
+
+    var line = d3.svg.line()
+        .x(function(d) { return xScale(d.x); })
+        .y(function(d) { return yScale(d.y); });
+/*
+    var line2 = d3.svg.line()
+        .x(function(d) { return xScale(d.x); })
+        .y(function(d) { return yScale(d.y); });
+    var line2 = d3.svg.line()
+        .x(function(d) { return xScale(d.x); })
+        .y(function(d) { return yScale(d.y); });
+*/
+    var svg = d3.select("#chartLine").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("id", "chart2")
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    svg.append("g")
+        .attr("class", "x axis")
+        .attr("transform", "translate(0," + height + ")")
+        .call(xAxis)
+    svg.append("g")
+        .attr("class", "y axis")
+        .call(yAxis)
+    svg.append("path")
+        .data([dataset])
+        .attr("class", "line")
+        .attr("d", line)
+        //.attr("id", "A")
+        .attr('stroke', 'black')
+        .attr('stroke-width', '3px')
+        .attr('fill', 'none');
+        //.on("mouseover", highlight)
+        //.on("mouseout", function(){ d3.selectAll(".link").style('opacity', 1);   });
+    /*
+    svg.append("path")
+        .data([dataset2])
+        .attr("class", "line")
+        .attr("d", line)
+        .attr("id", "B")
+        .on("mouseover", highlight)
+        .on("mouseout", function(){ d3.selectAll(".link").style('opacity', 1);   });
+    svg.append("path")
+        .data([dataset3])
+        .attr("class", "line")
+        .attr("d", line)
+        .attr("id", "C")
+        .on("mouseover", highlight)
+        .on("mouseout", function(){ d3.selectAll(".link").style('opacity', 1);   });
+    */
+   // svg.append("circle").attr("width", 200).attr("height", 200)
+    var selectCircle = svg.selectAll(".circle")
+        .data(dataset)
+    selectCircle.enter().append("circle")
+        .attr("class", "circle")
+        .attr("r", 6)
+        .attr("cx", function(d) {
+            return xScale(d.x)
+        })
+        .attr("cy", function(d) {
+            return yScale(d.y)
+        })
+        .attr("id", function(d) {
+            return d.m
+        })
+        //.attr("id", "B")
+        .on("mouseover", highlight)
+        .on("mouseout", function(){ d3.selectAll(".link").style('opacity', 1);   })
+        //.on("mouseout", function(){ d3.selectAll(".node").style('opacity', 1);   })
+        //.attr("fill", "#FFC300")
+
+
+    /*
+    // Add the path using this helper function
+    svg.append('circle')
+        //.attr("width", 300)
+        //.attr("height", 200)
+        .attr('cx', 150)
+        .attr('cy', 100)
+        .attr('r', 10)
+        .attr('stroke', 'black')
+        .attr('fill', '#69a3b2');
+
+     */
+
+    function highlight(){
+        var id = this.id;
+        d3.selectAll(".link").style('opacity', 0.1);
+        d3.selectAll("." + id).style('opacity', 1);
+    }
+
+</script>
+
+</body>
+</html>
