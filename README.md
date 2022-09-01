@@ -1,4 +1,4 @@
-# CMPT469-subproject-sankey
+# Data-Vis-Subproject-Sankey
 
 Sankay graph linked with a line chart
 Sankey displays the frequency of character tier matchups with opponent's character tier
