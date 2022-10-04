@@ -8,4 +8,3 @@ Created with HTML, CSS and JS
 
 Configured with WebStorm 2021.2.2
 
-Video: https://youtu.be/1vEMXYajLWU
